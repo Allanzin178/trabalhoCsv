@@ -50,46 +50,64 @@ int conta_linhas();
 
 int main() {
     FILE *fp;
-    int i;
+    int i, j;
     char linha[255];
+    char teste[] = "\",";
 	
-	Titulo t = criar_titulo();
-    Processo processo[100];
-    
     // Abre o arquivo para leitura
     fp = fopen("processo_043_202409032338.csv", "r");
+    
+    Titulo t = criar_titulo();
+	Processo *processo = (Processo *) malloc(conta_linhas(fp) * sizeof(Processo));
     
     if (fp == NULL) {
         printf("Erro ao abrir o arquivo\n");
         exit(1);
     }
+    
     printf("Tamanho do char: %d\n",sizeof(char));
     printf("Arquivo aberto com sucesso!\n");
     
-    printf("%d", conta_linhas(fp));
+    printf("%d\n", conta_linhas(fp));
     
-//    for(i = 0; fgets(linha, sizeof(linha), fp) != NULL; i++){
-//    	if(i == 0){
-//    		fscanf(fp, "%[^,] %[^,] %[^,] %[^,] %[^,] %[^,]", 
-//				t.id, 
-//				t.numero, 
-//				t.data_ajuizamento, 
-//				t.id_classe, 
-//				t.id_assunto, 
-//				t.ano_eleicao);
-//	    		printf("%s", linha);
-//    		continue;
-//		}
-//		fscanf(fp, "%d %[^,] %[^,] {%d} {%d} %d", 
-//			&processo[i - 1].id, 
+    
+    for(i = 0; fgets(linha, sizeof(linha), fp) != NULL; i++){
+    	char *resultado = strtok(linha, teste);
+    	
+    	if(i == 0){
+    		sscanf(linha, "%[^,] %[^,] %[^,] %[^,] %[^,] %[^,]", 
+				t.id, 
+				t.numero, 
+				t.data_ajuizamento, 
+				t.id_classe, 
+				t.id_assunto, 
+				t.ano_eleicao);
+    		continue;
+		}
+		for(j = 0; j < 6; j++){
+    		printf("%s\n", resultado);
+    		resultado = strtok(NULL, teste);
+		}
+		sscanf(linha, "%d,%[^,],%[^,],{%d},{%d},%d", 
+			&processo[i - 1].id, 
+			processo[i - 1].numero, 
+			processo[i - 1].data_ajuizamento,
+			&processo[i - 1].id_classe,
+			&processo[i - 1].id_assunto,
+			&processo[i - 1].ano_eleicao);
+		
+//		printf("Linha %d: %d %s %s %d %d %d\n", 
+//			i, 
+//			processo[i - 1].id, 
 //			processo[i - 1].numero, 
 //			processo[i - 1].data_ajuizamento,
-//			&processo[i - 1].id_classe,
-//			&processo[i - 1].id_assunto,
-//			&processo[i - 1].ano_eleicao);
-//			printf("%s", linha);
-//	}
+//			processo[i - 1].id_classe,
+//			processo[i - 1].id_assunto,
+//			processo[i - 1].ano_eleicao);
+	}
     
+    free(processo);
+    fclose(fp);
     return 0;
 }
 
@@ -118,6 +136,7 @@ int conta_linhas(FILE *fp){
 	int n;
 	char linha[255];
 	for(n = 0; fgets(linha, sizeof(linha), fp); n++);
+	rewind(fp);
 	return n;
 }
 
