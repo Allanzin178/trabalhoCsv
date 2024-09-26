@@ -45,6 +45,8 @@ typedef struct{
 } Titulo;
 
 Titulo criar_titulo();
+Processo criar_processo();
+int conta_linhas();
 
 int main() {
     FILE *fp;
@@ -64,21 +66,29 @@ int main() {
     printf("Tamanho do char: %d\n",sizeof(char));
     printf("Arquivo aberto com sucesso!\n");
     
-    for(i = 0; fgets(linha, sizeof(linha), fp); i++){
-    	if(i == 0){
-    		fscanf(fp, "%[^,] %[^,] %[^,] %[^,] %[^,] %[^,]", t.id, t.numero, t.data_ajuizamento, t.id_classe, t.id_assunto, t.ano_eleicao);
-    		printf("%s", linha);
-    		continue;
-		}
-		sscanf(fp, "%d %[^,] %[^,] {%d} {%d} %d %c", 
-		&processo[i - 1].id, 
-		processo[i - 1].numero, 
-		processo[i - 1].data_ajuizamento,
-		&processo[i - 1].id_classe,
-		&processo[i - 1].id_assunto,
-		&processo[i - 1].ano_eleicao);
-		printf("%s", linha);
-	}
+    printf("%d", conta_linhas(fp));
+    
+//    for(i = 0; fgets(linha, sizeof(linha), fp) != NULL; i++){
+//    	if(i == 0){
+//    		fscanf(fp, "%[^,] %[^,] %[^,] %[^,] %[^,] %[^,]", 
+//				t.id, 
+//				t.numero, 
+//				t.data_ajuizamento, 
+//				t.id_classe, 
+//				t.id_assunto, 
+//				t.ano_eleicao);
+//	    		printf("%s", linha);
+//    		continue;
+//		}
+//		fscanf(fp, "%d %[^,] %[^,] {%d} {%d} %d", 
+//			&processo[i - 1].id, 
+//			processo[i - 1].numero, 
+//			processo[i - 1].data_ajuizamento,
+//			&processo[i - 1].id_classe,
+//			&processo[i - 1].id_assunto,
+//			&processo[i - 1].ano_eleicao);
+//			printf("%s", linha);
+//	}
     
     return 0;
 }
@@ -98,5 +108,16 @@ Titulo criar_titulo() {
     }
 
     return t;
+}
+
+Processo criar_processo() {
+	
+}
+
+int conta_linhas(FILE *fp){
+	int n;
+	char linha[255];
+	for(n = 0; fgets(linha, sizeof(linha), fp); n++);
+	return n;
 }
 
