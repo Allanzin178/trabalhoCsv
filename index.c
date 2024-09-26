@@ -5,7 +5,6 @@
 int main(int argc, char const *argv[])
 {
     system("cls");
-
     printf("Hello Word!");
 
     printf("\n\n");
