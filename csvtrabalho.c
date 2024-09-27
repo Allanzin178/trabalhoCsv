@@ -5,9 +5,13 @@
 
 typedef struct {
     int id;
+} Classes;
+
+typedef struct {
+    int id;
     char numero[20];
     char data_ajuizamento[23];
-    int id_classe;
+    Classes *classe;
     int id_assunto;
     int ano_eleicao;
 } Processo;
@@ -22,8 +26,7 @@ typedef struct {
 } Titulo;
 
 Titulo criar_titulo();
-Processo criar_processo();
-void imprimir_processos(Processo *processos, int num_processos);
+Processo *criar_processos();
 void imprime_processo(FILE *fp);
 int conta_linhas(FILE *fp);
 void ler_processos(FILE *fp, Processo *processos, int num_processos);
@@ -44,40 +47,37 @@ int main() {
         exit(1);
     }
     
-    int num_processos = conta_linhas(fp) - 1; // -1 para excluir o cabeçalho
-    Processo *processos = (Processo *) malloc(num_processos * sizeof(Processo));
-    
-    if (processos == NULL) {
-        printf("Erro ao alocar memória para os processos\n");
-        fclose(fp);
-        exit(1);
-    }
-    
-    ler_processos(fp, processos, num_processos);
-    imprimir_processos(processos, num_processos);
+    printf("Aquivo aberto!\n");
+    int numProcessos = conta_linhas(fp);
+    printf("Test1!\n");
+    Processo *processos = criar_processos(numProcessos, 5);
+    printf("teste!\n");
+    ler_processos(fp, processos, numProcessos);
+    printf("teste!\n");
     
     // 1. Ordenar por ID e salvar
-    ordenar_por_id(processos, num_processos);
-    salvar_processos_csv(processos, num_processos, "processos_ordenados_id.csv");
+    ordenar_por_id(processos, numProcessos);
+    salvar_processos_csv(processos, numProcessos, "processos_ordenados_id.csv");
     
     // 2. Ordenar por data de ajuizamento e salvar
-    ordenar_por_data(processos, num_processos);
-    salvar_processos_csv(processos, num_processos, "processos_ordenados_data.csv");
+    ordenar_por_data(processos, numProcessos);
+    salvar_processos_csv(processos, numProcessos, "processos_ordenados_data.csv");
     
     // 3. Contar processos por classe (exemplo com id_classe = 12554)
-    int id_classe_exemplo = 12554;
-    int count_classe = contar_processos_por_classe(processos, num_processos, id_classe_exemplo);
+    int id_classe_exemplo = 12553;
+    int count_classe = contar_processos_por_classe(processos, numProcessos, id_classe_exemplo);
     printf("Número de processos com id_classe %d: %d\n", id_classe_exemplo, count_classe);
     
     // 4. Contar assuntos distintos
-    int num_assuntos = contar_assuntos_distintos(processos, num_processos);
+    int num_assuntos = contar_assuntos_distintos(processos, numProcessos);
     printf("Número de id_assuntos distintos: %d\n", num_assuntos);
     
     // 5. Calcular dias em tramitação (exemplo com o primeiro processo)
-    int dias_tramitacao = calcular_dias_tramitacao(processos[0].data_ajuizamento);
+    int dias_tramitacao = calcular_dias_tramitacao(processos[1].data_ajuizamento);
     printf("Dias em tramitação do primeiro processo: %d\n", dias_tramitacao);
     
     free(processos);
+    free(processos->classe);
     fclose(fp);
     return 0;
 }
@@ -97,14 +97,25 @@ Titulo criar_titulo() {
     return t;
 }
 
-Processo criar_processo() {
-    Processo p;
-    p.id = 0;
-    memset(p.numero, 0, sizeof(p.numero));
-    memset(p.data_ajuizamento, 0, sizeof(p.data_ajuizamento));
-    p.id_classe = 0;
-    p.id_assunto = 0;
-    p.ano_eleicao = 0;
+Processo* criar_processos(int numProcessos, int maxClasses) {
+    Processo *p = (Processo *) malloc(numProcessos * sizeof(Processo));
+    if(p == NULL){
+        printf("Erro ao alocar memória para a lista");
+        exit(1);
+    }
+    p->classe = (Classes*) malloc(maxClasses *sizeof(Classes));
+
+    if(p->classe == NULL){
+        printf("Erro ao alocar memória para a lista");
+        free(p);
+        exit(1);
+    }
+
+    p->classe->id = 0;
+    memset(p->numero, 0, sizeof(p->numero));
+    memset(p->data_ajuizamento, 0, sizeof(p->data_ajuizamento));
+    p->id_assunto = 0;
+    p->ano_eleicao = 0;
     return p;
 }
 
@@ -121,20 +132,6 @@ void imprime_processo(FILE *fp) {
     char linha[255];
     for(i = 0; fgets(linha, sizeof(linha), fp) != NULL; i++) {
         printf("%s", linha);
-    }
-}
-
-void imprimir_processos(Processo *processos, int num_processos) {
-    printf("ID\tNúmero\t\t\tData Ajuizamento\t\tID Classe\tID Assunto\tAno Eleição\n");
-    printf("---------------------------------------------------------------------------------------------\n");
-    for (int i = 0; i < num_processos; i++) {
-        printf("%d\t%s\t%s\t%d\t\t%d\t\t%d\n",
-               processos[i].id,
-               processos[i].numero,
-               processos[i].data_ajuizamento,
-               processos[i].id_classe,
-               processos[i].id_assunto,
-               processos[i].ano_eleicao);
     }
 }
 
@@ -165,7 +162,7 @@ void ler_processos(FILE *fp, Processo *processos, int num_processos) {
                     processos[i].data_ajuizamento[sizeof(processos[i].data_ajuizamento) - 1] = '\0';
                     break;
                 case 3:
-                    processos[i].id_classe = atoi(token);
+                    processos[i].classe[0].id = atoi(token);
                     break;
                 case 4:
                     processos[i].id_assunto = atoi(token);
@@ -208,7 +205,7 @@ void ordenar_por_data(Processo *processos, int num_processos) {
 int contar_processos_por_classe(Processo *processos, int num_processos, int id_classe) {
     int count = 0;
     for (int i = 0; i < num_processos; i++) {
-        if (processos[i].id_classe == id_classe) {
+        if (processos[i].classe->id == id_classe) {
             count++;
         }
     }
@@ -263,7 +260,7 @@ void salvar_processos_csv(Processo *processos, int num_processos, const char *no
                 processos[i].id,
                 processos[i].numero,
                 processos[i].data_ajuizamento,
-                processos[i].id_classe,
+                processos[i].classe->id,
                 processos[i].id_assunto,
                 processos[i].ano_eleicao);
     }
