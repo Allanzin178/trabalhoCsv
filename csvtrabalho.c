@@ -33,6 +33,7 @@ int main(){
 
     lerCsv(fp, p);
 
+    free(p);
     fclose(fp);
 }
 
@@ -62,30 +63,61 @@ int contLinhas(FILE *fp){
 }
 
 void lerCsv(FILE *fp, Processo *p){
-    int i, j, cont;
+    int i, j, cont, virg = 0;
     char linha[255];
-    char *rem = strtok(linha, ",");
+    char *rem;
+    
+    // for(i = 30; i < sizeof(linha); i++){
+    //     if(linha[i] == '{'){
+    //         printf("teste");
+    //         for(j = i; linha[j] != '}'; j++){
+    //             if (linha[j] == ','){
+    //                 virg++;
+    //             }
+    //         }
+    //     }
+    // }
+    
 
     for(i = 0; fgets(linha, sizeof(linha), fp); i++){
+        cont = 0;
         if(i == 0){
             continue;
         }
-        sscanf(linha, "%d, %[^,], %[^,],{%d %d %d %d",
-            &p->id, 
-            p->numero,
-            p->data_ajuizamento,
-            &p->id_classe[0],
-            &p->id_classe[1],
-            &p->id_assunto[0],
-            &p->ano_eleicao);
-
-        printf("%d - %s - %s - %d - %d - %d - %d\n",
-            p->id, 
-            p->numero,
-            p->data_ajuizamento,
-            p->id_classe[0],
-            p->id_classe[1],
-            p->id_assunto[0],
-            p->ano_eleicao);
+        printf("%s", linha);
+        for(i = 30; i < sizeof(linha); i++){
+            if(linha[i] == '{'){
+                for(j = i; linha[j] != '}'; j++){
+                    if (linha[j] == ','){
+                        virg++;
+                    }
+                }
+            }
+        }
+        printf("virg%d\n", virg);
+        virg = 0;
+        // rem = strtok(linha, ",");
+        // // Armazenando
+        // while(rem != NULL && cont < 6){
+        //     // Inicio do switch
+        //     switch(cont){
+        //         case 0:
+        //             p[i - 1].id = atoi(rem);
+        //             printf("%d ", p[i - 1].id);
+        //             break;
+                
+        //         case 1:
+        //             strcpy(p[i-1].numero, rem);
+        //             printf("%s ", p[i - 1].numero);
+        //             break;
+        //         case 2:
+        //             strcpy(p[i-1].data_ajuizamento, rem);
+        //             printf("%s\n", p[i - 1].data_ajuizamento);
+        //             break;
+        //     }
+        //     rem = strtok(NULL, ",");
+        //     cont++;
+                
+        // }
     }
 }
