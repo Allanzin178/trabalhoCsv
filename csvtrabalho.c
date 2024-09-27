@@ -46,13 +46,11 @@ typedef struct{
 
 Titulo criar_titulo();
 Processo criar_processo();
+void imprime_processo();
 int conta_linhas();
 
 int main() {
     FILE *fp;
-    int i, j;
-    char linha[255];
-    char teste[] = "\",";
 	
     // Abre o arquivo para leitura
     fp = fopen("processo_043_202409032338.csv", "r");
@@ -67,44 +65,10 @@ int main() {
     
     printf("Tamanho do char: %d\n",sizeof(char));
     printf("Arquivo aberto com sucesso!\n");
-    
     printf("%d\n", conta_linhas(fp));
     
-    
-    for(i = 0; fgets(linha, sizeof(linha), fp) != NULL; i++){
-    	char *resultado = strtok(linha, teste);
-    	
-    	if(i == 0){
-    		sscanf(linha, "%[^,] %[^,] %[^,] %[^,] %[^,] %[^,]", 
-				t.id, 
-				t.numero, 
-				t.data_ajuizamento, 
-				t.id_classe, 
-				t.id_assunto, 
-				t.ano_eleicao);
-    		continue;
-		}
-		for(j = 0; j < 6; j++){
-    		printf("%s\n", resultado);
-    		resultado = strtok(NULL, teste);
-		}
-		sscanf(linha, "%d,%[^,],%[^,],{%d},{%d},%d", 
-			&processo[i - 1].id, 
-			processo[i - 1].numero, 
-			processo[i - 1].data_ajuizamento,
-			&processo[i - 1].id_classe,
-			&processo[i - 1].id_assunto,
-			&processo[i - 1].ano_eleicao);
-		
-//		printf("Linha %d: %d %s %s %d %d %d\n", 
-//			i, 
-//			processo[i - 1].id, 
-//			processo[i - 1].numero, 
-//			processo[i - 1].data_ajuizamento,
-//			processo[i - 1].id_classe,
-//			processo[i - 1].id_assunto,
-//			processo[i - 1].ano_eleicao);
-	}
+	imprime_processo(fp);
+
     
     free(processo);
     fclose(fp);
@@ -138,5 +102,14 @@ int conta_linhas(FILE *fp){
 	for(n = 0; fgets(linha, sizeof(linha), fp); n++);
 	rewind(fp);
 	return n;
+}
+
+void imprime_processo(FILE *fp){
+	int i, j;
+	char linha[255];
+	for(i = 0; fgets(linha, sizeof(linha), fp) != NULL; i++){
+    	printf("%s", linha);
+    	
+	}
 }
 
