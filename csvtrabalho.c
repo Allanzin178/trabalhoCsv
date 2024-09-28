@@ -12,6 +12,12 @@ typedef struct {
     int ano_eleicao;
 } Processo;
 
+typedef struct{
+    int ano;
+    int mes;
+    int dia;
+} Data;
+
 Processo *criarProcesso(int numLinhas, int maxClassesAssuntos);
 int contLinhas(FILE *fp);
 void lerCsv(FILE *fp, Processo *p, int numLinhas);
@@ -19,6 +25,7 @@ void ordenarIdCsv(Processo *p, int n);
 void ordenarDataCsv(Processo *p, int n);
 int contClasse(Processo *p, int n, int id);
 int idAssuntos(Processo *p, int n);
+int diasProcesso(Processo *p, int n, int id);
 
 int main(){
     FILE *fp;
@@ -54,7 +61,9 @@ int main(){
     // }
 
     printf("Quantidade de processos com a classe %d: %d\n", 11533, contClasse(p,numLinhas,11533));
-    printf("Quantidade de assuntos diferentes: %d", idAssuntos(p,numLinhas));
+    printf("Quantidade de assuntos diferentes: %d\n", idAssuntos(p,numLinhas));
+
+    printf("Dias do processo em tramitação até 27/09/2024: %d \n",diasProcesso(p,numLinhas,405280783));
 
     free(p);
     fclose(fp);
@@ -203,28 +212,84 @@ int contClasse(Processo *p, int n, int id){
     return cont;
 }
 
-int idAssuntos(Processo *p, int n){
-    int *dif = malloc(n * sizeof(int));
-    int cont = 0;
-    int novo = 1;
+int idAssuntos(Processo *p, int n) {
+    int *assuntos_unicos = malloc((4 * (n * sizeof(int))));
 
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < 8; j++){
-            for(int k = 0; k < cont; k++){
-                if(dif[cont] == p[i].id_assunto[j]){
-                    novo = 0;
-                    break;
-                }
+    int count = 0;
+
+    for (int i = 0; i < n; i++) { 
+        for (int j = 0; j < 8; j++) { 
+            int assunto = p[i].id_assunto[j];
+            if (assuntos_unicos[assunto] != 0 || p[i].id_assunto[j] == 0) {
+                continue;
             }
-            printf("Teste! %d\n %d\n", i, p[i].id_assunto[j]);
+            assuntos_unicos[assunto] = 1;
+            count++;
         }
-        if (novo == 1){
-                printf("Teste! %d\n %d\n", i, p[i].id_assunto[i]);
-                dif[cont] = p[i].id_assunto[i];
-                cont++;
-        }
-        
     }
-    free(dif);
-    return cont;
+
+    free(assuntos_unicos);
+    return count;
+}
+
+int diasProcesso(Processo *p, int n, int id){
+    int proc;
+    int finalD1 = 0, finalD2 = 0;
+    int dias_mes[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    Data d1;
+    Data d2 = {2024, 9, 27};
+
+    
+    for(int i = 0; i<n; i++){
+        if(id == p[i].id){
+            proc = i;
+            break;
+        }
+    }
+    char data[sizeof(p[proc].data_ajuizamento)];
+    strcpy(data, p[proc].data_ajuizamento);
+    sscanf(data, "%d-%d-%d", &d1.ano, &d1.mes, &d1.dia);
+
+
+
+    for (int i = 0; i < d1.ano; i++) {
+        if ((i % 4 == 0 && i % 100 != 0) || (i % 400 == 0)) {
+            finalD1 += 366;
+        } else {
+            finalD1 += 365;
+        }
+    }
+
+    for (int i = 0; i < d2.ano; i++) {
+        if ((i % 4 == 0 && i % 100 != 0) || (i % 400 == 0)) {
+            finalD2 += 366;
+        } else {
+            finalD2 += 365;
+        }
+    }
+
+
+    for (int i = 1; i < d1.mes; i++) {
+        if (i == 2 && ((d1.ano % 4 == 0 && d1.ano % 100 != 0) || (d1.ano % 400 == 0))) {
+            finalD1 += 29;
+        } else {
+            finalD1 += dias_mes[i - 1];
+        }
+    }
+
+
+    for (int i = 1; i < d2.mes; i++) {
+        if (i == 2 && ((d2.ano % 4 == 0 && d2.ano % 100 != 0) || (d2.ano % 400 == 0))) {
+            finalD2 += 29;
+        } else {
+            finalD2 += dias_mes[i - 1]; 
+        }
+    }
+
+  
+    finalD1 += d1.dia;
+    finalD2 += d2.dia;
+    
+
+    return finalD2 - finalD1;
 }
